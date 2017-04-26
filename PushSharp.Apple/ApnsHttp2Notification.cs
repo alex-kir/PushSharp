@@ -44,6 +44,8 @@ namespace PushSharp.Apple
 
         public string Topic { get;set; }
 
+        public string CollapseId { get;set; }
+
         public const int MAX_PAYLOAD_SIZE = 4096;
         public static readonly DateTime DoNotStore = DateTime.MinValue;
 

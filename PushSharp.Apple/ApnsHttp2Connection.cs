@@ -71,7 +71,7 @@ namespace PushSharp.Apple
 
             var payload = notification.Payload.ToString ();
 
-            var data = Encoding.ASCII.GetBytes (payload);
+            var data = Encoding.UTF8.GetBytes (payload);
 
             var headers = new NameValueCollection ();
             headers.Add ("apns-id", notification.Uuid); // UUID
@@ -89,6 +89,10 @@ namespace PushSharp.Apple
 
             if (!string.IsNullOrEmpty (notification.Topic)) 
                 headers.Add ("apns-topic", notification.Topic); // string topic
+
+            if (!string.IsNullOrEmpty(notification.CollapseId))
+                headers.Add("apns-collapse-id", notification.CollapseId); // string topic
+
 
             var response = await http2.Post (uri, headers, data);
             
@@ -115,7 +119,7 @@ namespace PushSharp.Apple
                     }
 
                     // Expired
-                    throw new PushSharp.Core.DeviceSubscriptonExpiredException {
+                    throw new PushSharp.Core.DeviceSubscriptionExpiredException(notification) {
                         OldSubscriptionId = notification.DeviceToken,
                         NewSubscriptionId = null,
                         ExpiredAt = timestamp
@@ -125,9 +129,10 @@ namespace PushSharp.Apple
                 // Get the reason
                 var reasonStr = json.Value<string> ("reason");
 
-                var reason = (ApnsHttp2FailureReason)Enum.Parse (typeof (ApnsHttp2FailureReason), reasonStr, true);
+                throw new Core.NotificationException(reasonStr, notification);
+                //var reason = (ApnsHttp2FailureReason)Enum.Parse (typeof (ApnsHttp2FailureReason), reasonStr, true);
 
-                throw new ApnsHttp2NotificationException (reason, notification);
+                //throw new ApnsHttp2NotificationException (reason, notification);
             }
         }
     }
